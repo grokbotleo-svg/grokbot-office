@@ -1,0 +1,1156 @@
+<!DOCTYPE html>
+<html lang="zh-Hant-TW">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="robots" content="noindex" />
+  <meta name="theme-color" content="#07101c" />
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%235ee7ff'/%3E%3Crect x='7' y='8' width='18' height='14' rx='6' fill='%230a1220'/%3E%3C/svg%3E" />
+  <title>GrokBot 辦公室</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;600;700&family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #07101c;
+      --bg-2: #0b1728;
+      --panel: rgba(8, 16, 30, 0.86);
+      --panel-solid: #0c182a;
+      --line: rgba(140, 190, 255, 0.16);
+      --line-strong: rgba(140, 190, 255, 0.28);
+      --text: #e8eef8;
+      --muted: #8b9bb3;
+      --dim: #66768c;
+      --accent: #5ee7ff;
+      --accent-2: #7aa2ff;
+      --green: #3ee0a0;
+      --amber: #f5b942;
+      --red: #ff5d6c;
+      --grey: #7a8494;
+      --warn-bg: rgba(245, 185, 66, 0.1);
+      --shadow: 0 18px 50px rgba(0, 0, 0, 0.45);
+      --radius: 16px;
+      --font: "Outfit", "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", sans-serif;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { height: 100%; background: var(--bg); color: var(--text); font-family: var(--font); overflow: hidden; }
+    button, input { font-family: inherit; }
+    #app { display: flex; flex-direction: column; height: 100%; min-height: 100dvh; }
+    .topbar {
+      height: 56px; flex: 0 0 56px;
+      display: flex; align-items: center; gap: 16px;
+      padding: 0 18px;
+      border-bottom: 1px solid var(--line);
+      background: linear-gradient(180deg, rgba(12, 24, 42, 0.95), rgba(8, 16, 30, 0.9));
+      backdrop-filter: blur(16px);
+      z-index: 5;
+    }
+    .brand { display: flex; align-items: center; gap: 10px; min-width: 0; }
+    .logo {
+      width: 28px; height: 28px; border-radius: 8px;
+      background: linear-gradient(145deg, #5ee7ff, #4d8dff);
+      box-shadow: 0 0 18px rgba(94, 231, 255, 0.45);
+      position: relative; flex: 0 0 28px;
+    }
+    .logo::after {
+      content: ""; position: absolute; inset: 6px 8px 10px;
+      border-radius: 6px 6px 4px 4px;
+      background: #0a1220;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.25);
+    }
+    .brand h1 { font-size: 16px; font-weight: 700; letter-spacing: 0.02em; white-space: nowrap; }
+    .brand h1 span { color: var(--accent); }
+    .meta { color: var(--muted); font-size: 12px; display: flex; gap: 10px; flex-wrap: wrap; }
+    .meta b { color: var(--text); font-weight: 600; }
+    .spacer { flex: 1; }
+    .clock {
+      font-size: 12px; color: var(--muted); text-align: right; line-height: 1.35;
+    }
+    .clock b { display: block; color: var(--text); font-size: 13px; font-weight: 600; font-variant-numeric: tabular-nums; }
+    .main { flex: 1; display: flex; min-height: 0; position: relative; }
+    .panel {
+      width: 300px; flex: 0 0 300px;
+      background: var(--panel);
+      backdrop-filter: blur(18px);
+      display: flex; flex-direction: column; min-height: 0;
+      z-index: 4;
+    }
+    .panel.left { border-right: 1px solid var(--line); }
+    .panel.right { border-left: 1px solid var(--line); }
+    .panel-scroll { flex: 1; overflow: auto; padding: 14px 14px 20px; }
+    .panel-scroll::-webkit-scrollbar { width: 8px; }
+    .panel-scroll::-webkit-scrollbar-thumb { background: rgba(140,190,255,.2); border-radius: 8px; }
+    .section-title {
+      font-size: 11px; letter-spacing: 0.08em;
+      color: var(--dim); font-weight: 600; margin: 4px 0 10px;
+    }
+    .floors { display: flex; flex-direction: column; gap: 6px; }
+    .floor-btn {
+      display: flex; align-items: center; gap: 10px;
+      width: 100%; text-align: left; cursor: pointer;
+      background: rgba(255,255,255,0.03);
+      border: 1px solid var(--line);
+      color: var(--text);
+      border-radius: 12px; padding: 9px 10px;
+      transition: border-color .15s, background .15s;
+    }
+    .floor-btn:hover { border-color: var(--line-strong); background: rgba(94,231,255,0.05); }
+    .floor-btn.active { border-color: rgba(94,231,255,0.55); background: rgba(94,231,255,0.08); }
+    .floor-dot { width: 9px; height: 9px; border-radius: 50%; flex: 0 0 9px; box-shadow: 0 0 8px currentColor; }
+    .floor-btn .name { font-size: 13px; font-weight: 600; }
+    .floor-btn .sub { font-size: 11px; color: var(--muted); margin-top: 1px; }
+    .floor-btn .lvl { margin-left: auto; font-size: 11px; color: var(--dim); font-variant-numeric: tabular-nums; }
+    .wait-list { display: flex; flex-direction: column; gap: 8px; }
+    .wait-card {
+      width: 100%; text-align: left; cursor: pointer;
+      background: var(--warn-bg);
+      border: 1px solid rgba(245, 185, 66, 0.28);
+      color: var(--text);
+      border-radius: 12px; padding: 10px 11px;
+    }
+    .wait-card:hover { border-color: rgba(245, 185, 66, 0.55); }
+    .wait-card.active { box-shadow: 0 0 0 1px rgba(245, 185, 66, 0.6); }
+    .wait-card .tag {
+      display: inline-block; font-size: 10px; font-weight: 700; letter-spacing: .06em;
+      color: #0a1220; background: var(--amber); border-radius: 999px; padding: 1px 7px; margin-bottom: 6px;
+    }
+    .wait-card .title { font-size: 13px; font-weight: 600; line-height: 1.4; }
+    .wait-card .detail { font-size: 11px; color: var(--muted); margin-top: 5px; line-height: 1.5; }
+    .wait-card .owner { font-size: 11px; color: var(--amber); margin-top: 6px; }
+    .stage { flex: 1; position: relative; min-width: 0; background: radial-gradient(ellipse at 50% 20%, #102238 0%, #07101c 70%); }
+    canvas { display: block; width: 100%; height: 100%; cursor: grab; }
+    canvas.dragging { cursor: grabbing; }
+    .hint {
+      position: absolute; left: 14px; bottom: 12px; right: 14px;
+      display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap;
+      font-size: 11px; color: var(--dim); pointer-events: none;
+    }
+    .card {
+      background: rgba(255,255,255,0.03);
+      border: 1px solid var(--line);
+      border-radius: 14px; padding: 12px;
+      margin-bottom: 10px;
+    }
+    .card h3 { font-size: 15px; font-weight: 700; }
+    .card .kicker { font-size: 11px; color: var(--muted); margin-bottom: 4px; }
+    .kv { display: grid; grid-template-columns: 76px 1fr; gap: 6px 8px; font-size: 12px; margin-top: 10px; }
+    .kv dt { color: var(--dim); }
+    .kv dd { color: var(--text); }
+    .unknown { color: var(--muted); }
+    .status-pill {
+      display: inline-flex; align-items: center; gap: 6px;
+      font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 999px;
+      border: 1px solid var(--line);
+    }
+    .status-pill i { width: 7px; height: 7px; border-radius: 50%; background: var(--grey); }
+    .status-pill.waiting { color: var(--amber); border-color: rgba(245,185,66,.35); background: var(--warn-bg); }
+    .status-pill.waiting i { background: var(--amber); box-shadow: 0 0 8px var(--amber); }
+    .status-pill.unknown i { background: var(--grey); }
+    .chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+    .chip {
+      border: 1px solid var(--line); background: rgba(255,255,255,0.03);
+      color: var(--text); border-radius: 999px; padding: 5px 10px; font-size: 11px; cursor: pointer;
+    }
+    .chip:hover, .chip.active { border-color: rgba(94,231,255,0.5); background: rgba(94,231,255,0.08); }
+    .bar-row { margin: 6px 0; }
+    .bar-row .lab { display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 4px; gap: 8px; }
+    .bar-row .lab span:last-child { font-variant-numeric: tabular-nums; color: var(--accent); font-weight: 600; }
+    .track { height: 7px; background: rgba(255,255,255,0.06); border-radius: 99px; overflow: hidden; }
+    .track > i { display: block; height: 100%; border-radius: 99px; }
+    .subbars { margin: 4px 0 10px 10px; padding-left: 8px; border-left: 1px solid var(--line); }
+    .subbars .bar-row .lab { font-size: 11px; color: var(--muted); }
+    .subbars .bar-row .lab span:last-child { color: var(--muted); font-weight: 500; }
+    .spend {
+      display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-top: 8px;
+    }
+    .spend div {
+      background: rgba(255,255,255,0.03); border: 1px solid var(--line);
+      border-radius: 10px; padding: 8px; text-align: center;
+    }
+    .spend label { display: block; font-size: 10px; color: var(--dim); letter-spacing: .06em; }
+    .spend b { display: block; margin-top: 4px; font-size: 14px; color: var(--muted); font-weight: 600; }
+    .legend {
+      font-size: 11px; color: var(--muted); line-height: 1.55;
+      border-top: 1px solid var(--line); padding-top: 10px; margin-top: 8px;
+    }
+    .legend strong { color: var(--text); font-weight: 600; }
+    .rings { display: flex; flex-wrap: wrap; gap: 8px 12px; margin: 8px 0 0; font-size: 11px; color: var(--muted); }
+    .rings span { display: inline-flex; align-items: center; gap: 6px; }
+    .rings i { width: 8px; height: 8px; border-radius: 50%; border: 2px solid currentColor; }
+    .mobile-bar { display: none; }
+    .sheet-close { display: none; }
+    @media (max-width: 900px) {
+      .topbar { padding: 0 12px; height: 52px; flex: 0 0 52px; }
+      .meta { display: none; }
+      .panel {
+        position: fixed; left: 0; right: 0; bottom: 0; top: auto;
+        width: 100%; flex-basis: auto; height: min(72dvh, 620px);
+        border-radius: 18px 18px 0 0; border: 1px solid var(--line);
+        transform: translateY(110%); transition: transform .25s ease;
+        z-index: 20;
+      }
+      .panel.open { transform: translateY(0); }
+      .sheet-close { display: block; position: absolute; top: 10px; right: 12px; background: none; border: 0; color: var(--muted); font-size: 18px; cursor: pointer; }
+      .mobile-bar {
+        display: flex; gap: 8px; position: absolute; left: 10px; right: 10px; bottom: 28px;
+        z-index: 6; pointer-events: auto;
+      }
+      .mobile-bar button {
+        flex: 1; border: 1px solid var(--line-strong); background: rgba(8,16,30,0.88);
+        color: var(--text); border-radius: 12px; padding: 10px 8px; font-size: 12px; font-weight: 600; cursor: pointer;
+        backdrop-filter: blur(12px);
+      }
+      .hint { bottom: 76px; font-size: 10px; }
+    }
+  </style>
+</head>
+<body>
+  <div id="app">
+    <header class="topbar">
+      <div class="brand">
+        <div class="logo" aria-hidden="true"></div>
+        <h1>GrokBot <span>辦公室</span></h1>
+      </div>
+      <div class="meta" id="top-meta">6 層 · 14 位 bot · 3 間會議室</div>
+      <div class="spacer"></div>
+      <div class="clock"><b id="live-clock">--:--</b><span>台北時間</span></div>
+    </header>
+    <div class="main">
+      <aside class="panel left" id="panel-left">
+        <button class="sheet-close" type="button" data-close="left" aria-label="關閉">✕</button>
+        <div class="panel-scroll">
+          <div class="section-title">樓層</div>
+          <div class="floors" id="floor-list"></div>
+          <div class="section-title" style="margin-top:18px">等待 leo 處理</div>
+          <div class="wait-list" id="wait-list"></div>
+        </div>
+      </aside>
+      <div class="stage">
+        <canvas id="c" aria-label="GrokBot 辦公室等角視圖"></canvas>
+        <div class="hint">
+          <span>點樓層聚焦 · 拖曳平移 · 滾輪縮放 · 雙擊重設 · 1–6 選層</span>
+          <span>動畫僅為閒置動態，不代表工作狀態</span>
+        </div>
+        <div class="mobile-bar">
+          <button type="button" data-sheet="left">樓層／等候</button>
+          <button type="button" data-sheet="right">詳情／用量</button>
+        </div>
+      </div>
+      <aside class="panel right" id="panel-right">
+        <button class="sheet-close" type="button" data-close="right" aria-label="關閉">✕</button>
+        <div class="panel-scroll">
+          <div class="section-title">詳情</div>
+          <div id="detail"></div>
+          <div class="section-title">本週用量占比</div>
+          <div class="card" id="usage-card"></div>
+          <div class="legend" id="legend"></div>
+        </div>
+      </aside>
+    </div>
+  </div>
+  <script>
+  (() => {
+    "use strict";
+    if (typeof CanvasRenderingContext2D !== "undefined" && !CanvasRenderingContext2D.prototype.roundRect) {
+      CanvasRenderingContext2D.prototype.roundRect = function(x, y, w, h, r) {
+        r = typeof r === "number" ? r : 0;
+        this.moveTo(x + r, y);
+        this.arcTo(x + w, y, x + w, y + h, r);
+        this.arcTo(x + w, y + h, x, y + h, r);
+        this.arcTo(x, y + h, x, y, r);
+        this.arcTo(x, y, x + w, y, r);
+        this.closePath();
+      };
+    }
+
+    const AS_OF = "2026-11-15";
+    const USAGE_RANGE = "2026-11-11 至 2026-11-14";
+
+    const FLOORS = [
+      { id: "meet",     name: "會議室",   level: 1, tint: [180, 140, 80],  accent: "#f5b942", hint: "群組會議空間" },
+      { id: "explore",  name: "探索",     level: 2, tint: [140, 110, 210], accent: "#a78bfa", hint: "新事物與實驗" },
+      { id: "life",     name: "生活",     level: 3, tint: [70, 160, 110],  accent: "#4ade80", hint: "日常與出行" },
+      { id: "eng",      name: "工程",     level: 4, tint: [70, 130, 220],  accent: "#4d8dff", hint: "程式、除錯與基礎建設" },
+      { id: "research", name: "投資研究", level: 5, tint: [210, 160, 60],  accent: "#f5b942", hint: "市場與產業研究" },
+      { id: "mgmt",     name: "管理層",   level: 6, tint: [210, 90, 110],  accent: "#f43f5e", hint: "督導與分身" }
+    ];
+
+    const BOTS = [
+      { id: "supervisor", name: "Supervisor", floor: "mgmt", color: "#f43f5e", x: 5.0, y: 8.3, usage: null, routines: null, status: "unknown" },
+      { id: "fenShen", name: "分身", floor: "mgmt", color: "#e2e8f0", x: 11.2, y: 8.5, usage: null, routines: null, status: "unknown" },
+      { id: "finance", name: "財務專家", floor: "research", color: "#f5b942", x: 7.6, y: 8.7, usage: 53, status: "unknown",
+        routines: [
+          { name: "SPX 盤中更新", share: 22 },
+          { name: "Gamma 每日分析", share: 7 },
+          { name: "盤前分析", share: 7 }
+        ] },
+      { id: "premarket", name: "Premarket Desk · 盘前早报", short: "Premarket Desk", floor: "research", color: "#3dd6f5", x: 3.4, y: 8.3, usage: 19, routines: null, status: "unknown" },
+      { id: "semi", name: "工作-半導體研究", short: "半導體研究", floor: "research", color: "#818cf8", x: 12.2, y: 8.4, usage: null, routines: null, status: "unknown" },
+      { id: "code", name: "Code", floor: "eng", color: "#4d8dff", x: 4.6, y: 8.6, usage: null, status: "waiting",
+        routines: [
+          { name: "虛擬辦公室每日更新", note: "每日約 08:00（台北時間）" },
+          { name: "Pi task completion", note: "webhook" }
+        ] },
+      { id: "re", name: "Reverse Engineer", short: "Reverse Eng.", floor: "eng", color: "#ff8a3d", x: 8.8, y: 8.3, usage: null, routines: null, status: "unknown" },
+      { id: "netdoc", name: "網路醫生", floor: "eng", color: "#2dd4bf", x: 12.8, y: 8.6, usage: null, routines: null, status: "unknown" },
+      { id: "life", name: "LIFE", floor: "life", color: "#4ade80", x: 3.4, y: 8.4, usage: 4, routines: null, status: "unknown" },
+      { id: "nutrition", name: "營養師", floor: "life", color: "#86e36a", x: 6.8, y: 8.7, usage: null, routines: null, status: "unknown" },
+      { id: "ledger", name: "記帳", floor: "life", color: "#fbbf24", x: 10.2, y: 8.3, usage: null, routines: null, status: "unknown" },
+      { id: "travel", name: "美國自由行", floor: "life", color: "#5b9fff", x: 13.3, y: 8.8, usage: 8, routines: null, status: "unknown" },
+      { id: "explore", name: "新玩意探索", floor: "explore", color: "#a78bfa", x: 5.2, y: 8.4, usage: null, routines: null, status: "unknown" },
+      { id: "newbot", name: "New Bot", floor: "explore", color: "#e85dff", x: 11.0, y: 8.5, usage: 10, routines: null, status: "unknown" }
+    ];
+
+    const GROUPS = [
+      { id: "g-life", name: "leo、分身和LIFE", color: "#4ade80", x: 3.6, y: 7.2 },
+      { id: "g-gain", name: "增重！", color: "#fbbf24", x: 8.2, y: 7.0 },
+      { id: "g-ind", name: "指標建立", color: "#818cf8", x: 12.6, y: 7.4 }
+    ];
+
+    const WAITING = [
+      { id: "w1", title: "特區熱力圖改版提案",
+        detail: "標題與「本圖不具預警功能」說明、藍橙配色等，由財務專家與分身整理，等 leo 核准。",
+        owners: "Code / 財務專家", focus: "finance" },
+      { id: "w2", title: "虛擬辦公室 v2",
+        detail: "等分身審閱。",
+        owners: "Code", focus: "code" },
+      { id: "w3", title: "Tesla FSD 租車",
+        detail: "12/18–26，ALB 的 Christian，待 leo 決定，尚未預訂。",
+        owners: "Code", focus: "code" }
+    ];
+
+    const USAGE = [
+      { id: "finance", name: "財務專家", share: 53, color: "#f5b942" },
+      { id: "premarket", name: "Premarket Desk", share: 19, color: "#3dd6f5" },
+      { id: "newbot", name: "New Bot", share: 10, color: "#e85dff" },
+      { id: "travel", name: "美國自由行", share: 8, color: "#5b9fff" },
+      { id: "life", name: "LIFE", share: 4, color: "#4ade80" },
+      { id: "other", name: "其他", share: 6, color: "#7a8494" }
+    ];
+
+    const FW = 16, FD = 11, GAP = 3.55, SLAB = 0.28;
+    const TW = 56, TH = 28;
+
+    const canvas = document.getElementById("c");
+    const ctx = canvas.getContext("2d", { alpha: false, desynchronized: true });
+    const state = {
+      cam: { x: 0, y: 0, z: 1 },
+      target: { x: 0, y: 0, z: 1 },
+      selectedFloor: null,
+      selectedBot: null,
+      selectedWait: null,
+      selectedGroup: null,
+      dragging: false,
+      moved: false,
+      lastX: 0, lastY: 0,
+      cssW: 0, cssH: 0,
+      hits: [],
+      t0: performance.now(),
+      uiDirty: true
+    };
+
+    BOTS.forEach((b, i) => { b.seed = (i + 1) * 1.73; });
+    GROUPS.forEach((g, i) => { g.seed = (i + 3) * 2.11; });
+
+    function floorById(id) { return FLOORS.find(f => f.id === id); }
+    function botById(id) { return BOTS.find(b => b.id === id); }
+    function floorZ(level) { return (level - 1) * GAP + 0.15; }
+    function botsOn(fid) { return BOTS.filter(b => b.floor === fid); }
+
+    function iso(x, y, z) {
+      return { x: (x - y) * TW / 2, y: (x + y) * TH / 2 - z * TH };
+    }
+    function worldToScreen(x, y, z) {
+      const p = iso(x, y, z);
+      const { cam } = state;
+      return {
+        x: state.cssW / 2 + (p.x + cam.x) * cam.z,
+        y: state.cssH / 2 + (p.y + cam.y) * cam.z
+      };
+    }
+    function shade(rgb, m, a) {
+      const r = Math.max(0, Math.min(255, rgb[0] * m));
+      const g = Math.max(0, Math.min(255, rgb[1] * m));
+      const b = Math.max(0, Math.min(255, rgb[2] * m));
+      return a == null ? `rgb(${r|0},${g|0},${b|0})` : `rgba(${r|0},${g|0},${b|0},${a})`;
+    }
+    function hexRgb(hex) {
+      const n = parseInt(hex.slice(1), 16);
+      return [(n >> 16) & 255, (n >> 8) & 255, n & 255];
+    }
+    function pathQuad(a, b, c, d) {
+      ctx.beginPath();
+      ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); ctx.lineTo(c.x, c.y); ctx.lineTo(d.x, d.y);
+      ctx.closePath();
+    }
+    function boxCorners(x, y, z, w, d, h) {
+      return {
+        tn: worldToScreen(x, y, z + h),
+        te: worldToScreen(x + w, y, z + h),
+        ts: worldToScreen(x + w, y + d, z + h),
+        tw: worldToScreen(x, y + d, z + h),
+        bn: worldToScreen(x, y, z),
+        be: worldToScreen(x + w, y, z),
+        bs: worldToScreen(x + w, y + d, z),
+        bw: worldToScreen(x, y + d, z)
+      };
+    }
+    function drawBox(x, y, z, w, d, h, rgb, alpha) {
+      const c = boxCorners(x, y, z, w, d, h);
+      const a = alpha == null ? 1 : alpha;
+      pathQuad(c.tw, c.ts, c.bs, c.bw);
+      ctx.fillStyle = shade(rgb, 0.55, a); ctx.fill();
+      pathQuad(c.te, c.ts, c.bs, c.be);
+      ctx.fillStyle = shade(rgb, 0.72, a); ctx.fill();
+      pathQuad(c.tn, c.te, c.ts, c.tw);
+      ctx.fillStyle = shade(rgb, 1.05, a); ctx.fill();
+      ctx.strokeStyle = shade(rgb, 1.25, Math.min(1, a * 0.55));
+      ctx.lineWidth = 0.8; ctx.stroke();
+    }
+    function drawSlab(x, y, z, w, d, h, tint, glow, alpha) {
+      const c = boxCorners(x, y, z, w, d, h);
+      const a = alpha == null ? 0.92 : alpha;
+      pathQuad(c.tw, c.ts, c.bs, c.bw);
+      ctx.fillStyle = shade(tint, 0.28, a); ctx.fill();
+      pathQuad(c.te, c.ts, c.bs, c.be);
+      ctx.fillStyle = shade(tint, 0.38, a); ctx.fill();
+      pathQuad(c.tn, c.te, c.ts, c.tw);
+      const g = ctx.createLinearGradient(c.tn.x, c.tn.y, c.ts.x, c.ts.y);
+      g.addColorStop(0, shade(tint, 0.85, 0.55));
+      g.addColorStop(0.5, shade([90, 140, 190], 1, 0.22));
+      g.addColorStop(1, shade(tint, 0.7, 0.5));
+      ctx.fillStyle = g; ctx.fill();
+      ctx.strokeStyle = `rgba(160,210,255,${0.28 + glow * 0.45})`;
+      ctx.lineWidth = 1.4 + glow * 1.2; ctx.stroke();
+    }
+    function pointInQuad(p, a, b, c, d) {
+      function sign(p1, p2, p3) {
+        return (p1.x - p3.x) * (p2.y - p3.y) - (p2.x - p3.x) * (p1.y - p3.y);
+      }
+      const b1 = sign(p, a, b) < 0, b2 = sign(p, b, c) < 0, b3 = sign(p, c, d) < 0, b4 = sign(p, d, a) < 0;
+      return b1 === b2 && b2 === b3 && b3 === b4;
+    }
+
+    function fitCamera(animate) {
+      const mid = iso(FW / 2, FD / 2, FLOORS.length * GAP * 0.42);
+      const pad = Math.min(state.cssW, state.cssH) * 0.08;
+      const worldH = (FW + FD) * TH / 2 + FLOORS.length * GAP * TH + 80;
+      const worldW = (FW + FD) * TW / 2 + 80;
+      const zoom = Math.min((state.cssW - pad * 2) / worldW, (state.cssH - pad * 2) / worldH);
+      state.target.x = -mid.x;
+      state.target.y = -mid.y + 10;
+      state.target.z = Math.max(0.55, Math.min(1.35, zoom));
+      if (!animate) {
+        state.cam.x = state.target.x;
+        state.cam.y = state.target.y;
+        state.cam.z = state.target.z;
+      }
+    }
+    function focusFloor(fid, animate) {
+      const f = floorById(fid);
+      if (!f) return;
+      const z = floorZ(f.level) + 1.1;
+      const mid = iso(FW / 2, FD / 2, z);
+      state.target.x = -mid.x;
+      state.target.y = -mid.y + 20;
+      state.target.z = Math.max(state.cam.z, 1.05);
+      if (!animate) {
+        state.cam.x = state.target.x;
+        state.cam.y = state.target.y;
+        state.cam.z = state.target.z;
+      }
+    }
+
+    function resize() {
+      const stage = canvas.parentElement;
+      const r = stage.getBoundingClientRect();
+      state.cssW = Math.max(1, r.width);
+      state.cssH = Math.max(1, r.height);
+      const dpr = Math.min(window.devicePixelRatio || 1, 2);
+      canvas.width = Math.floor(state.cssW * dpr);
+      canvas.height = Math.floor(state.cssH * dpr);
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      if (!state.fitted) { fitCamera(false); state.fitted = true; }
+    }
+
+    function drawSky() {
+      const g = ctx.createLinearGradient(0, 0, 0, state.cssH);
+      g.addColorStop(0, "#081426");
+      g.addColorStop(0.45, "#0b1a30");
+      g.addColorStop(1, "#071018");
+      ctx.fillStyle = g;
+      ctx.fillRect(0, 0, state.cssW, state.cssH);
+      ctx.save();
+      ctx.globalAlpha = 0.7;
+      for (let i = 0; i < 70; i++) {
+        const sx = ((i * 97) % 1000) / 1000 * state.cssW;
+        const sy = ((i * 53) % 700) / 700 * state.cssH * 0.55;
+        const tw = 0.55 + 0.45 * Math.sin(state.now * 0.0016 + i);
+        ctx.fillStyle = `rgba(210,230,255,${0.15 + tw * 0.35})`;
+        ctx.fillRect(sx, sy, 1.2, 1.2);
+      }
+      ctx.restore();
+      const moon = { x: state.cssW * 0.78, y: state.cssH * 0.14 };
+      const mg = ctx.createRadialGradient(moon.x, moon.y, 0, moon.x, moon.y, 80);
+      mg.addColorStop(0, "rgba(190,220,255,0.22)");
+      mg.addColorStop(1, "rgba(190,220,255,0)");
+      ctx.fillStyle = mg; ctx.beginPath(); ctx.arc(moon.x, moon.y, 80, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = "rgba(230,238,255,0.85)";
+      ctx.beginPath(); ctx.arc(moon.x, moon.y, 16, 0, Math.PI * 2); ctx.fill();
+    }
+
+    function drawLamp(x, y, z, t) {
+      const flicker = 0.9 + 0.1 * Math.sin(t * 2.1 + x * 3);
+      const top = worldToScreen(x, y, z + 2.4);
+      const base = worldToScreen(x, y, z);
+      ctx.strokeStyle = "rgba(40,50,65,0.95)";
+      ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(base.x, base.y); ctx.lineTo(top.x, top.y); ctx.stroke();
+      const glow = ctx.createRadialGradient(top.x, top.y, 0, top.x, top.y, 38 * state.cam.z);
+      glow.addColorStop(0, `rgba(255,200,110,${0.42 * flicker})`);
+      glow.addColorStop(0.45, `rgba(255,170,70,${0.12 * flicker})`);
+      glow.addColorStop(1, "rgba(255,170,70,0)");
+      ctx.fillStyle = glow; ctx.beginPath(); ctx.arc(top.x, top.y, 38 * state.cam.z, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = `rgba(255,220,140,${0.9 * flicker})`;
+      ctx.beginPath(); ctx.arc(top.x, top.y, 3.2 * state.cam.z, 0, Math.PI * 2); ctx.fill();
+    }
+    function drawTree(x, y, z) {
+      drawBox(x - 0.12, y - 0.12, z, 0.24, 0.24, 0.7, [50, 40, 32]);
+      drawBox(x - 0.55, y - 0.55, z + 0.6, 1.1, 1.1, 0.7, [28, 70, 52]);
+      drawBox(x - 0.4, y - 0.4, z + 1.2, 0.8, 0.8, 0.55, [36, 92, 62]);
+    }
+
+    function drawGround() {
+      drawSlab(-7, -6, -0.12, FW + 14, FD + 12, 0.12, [28, 44, 62], 0.15, 0.95);
+      drawSlab(-2, -1.2, 0, FW + 4, FD + 3.2, 0.1, [40, 58, 78], 0.2, 0.95);
+      const path = boxCorners(-1.2, FD / 2 - 0.7, 0.1, FW + 2.4, 1.4, 0.02);
+      pathQuad(path.tn, path.te, path.ts, path.tw);
+      ctx.fillStyle = "rgba(70, 90, 110, 0.45)"; ctx.fill();
+      drawTree(-4.2, 1.5, 0.02);
+      drawTree(-3.4, 8.5, 0.02);
+      drawTree(FW + 3.6, 1.2, 0.02);
+      drawTree(FW + 4.2, 9.2, 0.02);
+      drawTree(-5.2, 5.0, 0.02);
+      const t = state.now / 1000;
+      [[-5, -2], [FW + 4.5, -2], [-5, FD + 3], [FW + 4.5, FD + 3], [-3.5, FD / 2], [FW + 3.2, FD / 2]].forEach(p => {
+        drawLamp(p[0], p[1], 0.02, t);
+      });
+    }
+
+    function drawBackWalls(level, tint) {
+      const z = floorZ(level);
+      const h = GAP - SLAB - 0.08;
+      const c1 = boxCorners(0.08, 0.08, z + SLAB, FW - 0.16, 0.12, h);
+      pathQuad(c1.tn, c1.te, c1.be, c1.bn);
+      ctx.fillStyle = shade(tint, 0.22, 0.28); ctx.fill();
+      ctx.strokeStyle = "rgba(140,190,255,0.18)"; ctx.lineWidth = 0.8; ctx.stroke();
+      const c2 = boxCorners(0.08, 0.08, z + SLAB, 0.12, FD - 0.16, h);
+      pathQuad(c2.tn, c2.tw, c2.bw, c2.bn);
+      ctx.fillStyle = shade(tint, 0.16, 0.28); ctx.fill();
+      ctx.strokeStyle = "rgba(140,190,255,0.16)"; ctx.stroke();
+    }
+
+    function desk(x, y, z, color, angleWide) {
+      drawBox(x, y, z, 2.2, 1.15, 0.55, [46, 38, 32]);
+      const rgb = hexRgb(color || "#5ee7ff");
+      drawBox(x + 0.25, y + 0.15, z + 0.55, 0.16, 0.16, 0.55, [30, 36, 48]);
+      const sc = boxCorners(x + 0.2, y + 0.12, z + 1.05, 0.08, 0.9, 0.7);
+      pathQuad(sc.te, sc.ts, sc.bs, sc.be);
+      ctx.fillStyle = shade(rgb, 1.1, 0.85); ctx.fill();
+      const glowAt = worldToScreen(x + 0.4, y + 0.6, z + 1.2);
+      const g = ctx.createRadialGradient(glowAt.x, glowAt.y, 0, glowAt.x, glowAt.y, 22 * state.cam.z);
+      g.addColorStop(0, `rgba(${rgb[0]},${rgb[1]},${rgb[2]},0.28)`);
+      g.addColorStop(1, `rgba(${rgb[0]},${rgb[1]},${rgb[2]},0)`);
+      ctx.fillStyle = g; ctx.beginPath(); ctx.arc(glowAt.x, glowAt.y, 22 * state.cam.z, 0, Math.PI * 2); ctx.fill();
+      if (angleWide) {
+        drawBox(x + 1.55, y + 0.2, z + 0.55, 0.18, 0.18, 0.7, [90, 70, 40]);
+        const lamp = worldToScreen(x + 1.7, y + 0.5, z + 1.35);
+        const lg = ctx.createRadialGradient(lamp.x, lamp.y, 0, lamp.x, lamp.y, 26 * state.cam.z);
+        lg.addColorStop(0, "rgba(255,200,110,0.4)");
+        lg.addColorStop(1, "rgba(255,200,110,0)");
+        ctx.fillStyle = lg; ctx.beginPath(); ctx.arc(lamp.x, lamp.y, 26 * state.cam.z, 0, Math.PI * 2); ctx.fill();
+      }
+    }
+    function plant(x, y, z) {
+      drawBox(x, y, z, 0.4, 0.4, 0.28, [90, 50, 40]);
+      drawBox(x - 0.05, y - 0.05, z + 0.28, 0.5, 0.5, 0.45, [36, 110, 70]);
+    }
+    function rack(x, y, z) {
+      drawBox(x, y, z, 0.9, 1.6, 2.0, [32, 38, 52]);
+      for (let i = 0; i < 5; i++) {
+        drawBox(x + 0.12, y + 0.15, z + 0.2 + i * 0.35, 0.66, 1.3, 0.08, [18, 22, 32]);
+        const led = worldToScreen(x + 0.25, y + 0.3, z + 0.28 + i * 0.35);
+        ctx.fillStyle = i % 2 ? "rgba(80,200,255,0.55)" : "rgba(80,200,255,0.25)";
+        ctx.beginPath(); ctx.arc(led.x, led.y, 1.4 * state.cam.z, 0, Math.PI * 2); ctx.fill();
+      }
+    }
+    function sofa(x, y, z) {
+      drawBox(x, y, z, 2.6, 1.1, 0.42, [62, 48, 40]);
+      drawBox(x, y, z + 0.42, 0.28, 1.1, 0.5, [72, 54, 44]);
+      drawBox(x + 2.32, y, z + 0.42, 0.28, 1.1, 0.5, [72, 54, 44]);
+      drawBox(x, y, z + 0.42, 2.6, 0.22, 0.55, [72, 54, 44]);
+    }
+    function bookcase(x, y, z) {
+      drawBox(x, y, z, 0.45, 2.2, 2.0, [58, 42, 32]);
+      for (let i = 0; i < 4; i++) drawBox(x + 0.05, y + 0.1, z + 0.35 + i * 0.4, 0.3, 2.0, 0.08, [40, 28, 22]);
+    }
+    function screenWall(x, y, z, color) {
+      drawBox(x, y, z, 0.2, 3.4, 1.8, [24, 30, 44]);
+      const rgb = hexRgb(color);
+      const c = boxCorners(x + 0.2, y + 0.15, z + 0.15, 0.04, 3.1, 1.5);
+      pathQuad(c.te, c.ts, c.bs, c.be);
+      ctx.fillStyle = shade(rgb, 0.7, 0.55); ctx.fill();
+    }
+
+    function furnish(floor) {
+      const z = floorZ(floor.level) + SLAB;
+      if (floor.id === "mgmt") {
+        bookcase(0.6, 2.2, z);
+        desk(3.2, 3.4, z, "#f43f5e", true);
+        desk(9.2, 4.0, z, "#e2e8f0", true);
+        plant(6.6, 2.2, z);
+        plant(14.6, 2.4, z);
+        plant(1.2, 8.4, z);
+      } else if (floor.id === "research") {
+        screenWall(0.5, 2.0, z, "#f5b942");
+        desk(2.4, 3.3, z, "#3dd6f5", true);
+        desk(6.2, 3.8, z, "#f5b942", true);
+        desk(10.6, 3.6, z, "#818cf8", true);
+        plant(14.8, 2.2, z);
+        plant(4.8, 8.6, z);
+      } else if (floor.id === "eng") {
+        rack(0.6, 1.8, z);
+        rack(1.7, 1.8, z);
+        desk(4.2, 4.2, z, "#4d8dff", true);
+        desk(8.6, 3.4, z, "#ff8a3d", true);
+        desk(11.6, 5.0, z, "#2dd4bf", false);
+        plant(14.8, 2.2, z);
+      } else if (floor.id === "life") {
+        sofa(1.4, 2.2, z);
+        desk(3.0, 3.6, z, "#4ade80", true);
+        desk(6.8, 4.4, z, "#86e36a", true);
+        desk(10.4, 3.2, z, "#fbbf24", true);
+        desk(12.2, 5.8, z, "#5b9fff", false);
+        plant(14.8, 2.0, z);
+        plant(1.0, 8.6, z);
+      } else if (floor.id === "explore") {
+        desk(4.2, 3.8, z, "#a78bfa", true);
+        desk(9.6, 4.2, z, "#e85dff", true);
+        plant(1.2, 2.4, z);
+        plant(14.6, 2.2, z);
+        plant(7.2, 8.4, z);
+        drawBox(1.4, 6.5, z, 1.6, 1.6, 0.7, [50, 40, 80]);
+      } else if (floor.id === "meet") {
+        plant(0.8, 2.0, z);
+        plant(14.8, 2.0, z);
+        plant(0.8, 8.8, z);
+      }
+    }
+
+    function drawMeetingTable(g, z, t) {
+      const x = g.x, y = g.y;
+      drawBox(x - 1.35, y - 0.85, z, 2.7, 1.7, 0.45, [58, 46, 36]);
+      const chairs = [[-0.7, -1.35], [0.5, -1.35], [-0.7, 1.0], [0.5, 1.0]];
+      chairs.forEach(o => drawBox(x + o[0], y + o[1], z, 0.55, 0.45, 0.42, [40, 48, 62]));
+      const rgb = hexRgb(g.color);
+      drawBox(x - 0.2, y - 0.15, z + 0.45, 0.4, 0.3, 0.12, rgb);
+      state.labels.push({ p: worldToScreen(x, y + 0.2, z + 1.35), text: g.name, color: g.color, active: state.selectedGroup === g.id });
+      const p = worldToScreen(x, y, z);
+      state.hits.push({ type: "group", id: g.id, x: p.x, y: p.y, r: 28 * state.cam.z });
+    }
+
+    function drawRing(sx, sy, status, pulse) {
+      const z = state.cam.z;
+      const rx = 15 * z, ry = 7.4 * z;
+      let col = "rgba(140,150,165,0.85)";
+      if (status === "waiting") col = `rgba(245,185,66,${0.75 + pulse * 0.25})`;
+      if (status === "working") col = "rgba(62,224,160,0.9)";
+      if (status === "stuck") col = "rgba(255,93,108,0.9)";
+      ctx.save();
+      ctx.translate(sx, sy);
+      ctx.strokeStyle = "rgba(0,0,0,0.35)";
+      ctx.lineWidth = 3.4 * z;
+      ctx.beginPath(); ctx.ellipse(0, 2 * z, rx, ry, 0, 0, Math.PI * 2); ctx.stroke();
+      ctx.strokeStyle = col;
+      ctx.lineWidth = 2.2 * z;
+      ctx.beginPath(); ctx.ellipse(0, 0, rx, ry, 0, 0, Math.PI * 2); ctx.stroke();
+      if (status === "waiting") {
+        ctx.fillStyle = `rgba(245,185,66,${0.12 + pulse * 0.1})`;
+        ctx.beginPath(); ctx.ellipse(0, 0, rx * 1.15, ry * 1.15, 0, 0, Math.PI * 2); ctx.fill();
+      }
+      ctx.restore();
+    }
+
+    function drawRobot(bot, z, t) {
+      const bob = Math.sin(t * 2.15 + bot.seed) * 0.12;
+      const sway = Math.sin(t * 1.1 + bot.seed * 0.7) * 0.08;
+      const feet = worldToScreen(bot.x + sway * 0.15, bot.y, z);
+      const pulse = 0.5 + 0.5 * Math.sin(t * 3 + bot.seed);
+      drawRing(feet.x, feet.y, bot.status, pulse);
+      const s = state.cam.z;
+      const head = worldToScreen(bot.x + sway * 0.2, bot.y, z + 1.05 + bob);
+      const body = worldToScreen(bot.x + sway * 0.15, bot.y, z + 0.55 + bob * 0.6);
+      const rgb = hexRgb(bot.color);
+      ctx.save();
+      ctx.fillStyle = shade(rgb, 0.85);
+      ctx.beginPath();
+      ctx.roundRect(body.x - 7.2 * s, body.y - 9.5 * s, 14.4 * s, 15.5 * s, 5 * s);
+      ctx.fill();
+      ctx.fillStyle = shade(rgb, 1.15);
+      ctx.beginPath();
+      ctx.roundRect(body.x - 6.2 * s, body.y - 8.6 * s, 12.4 * s, 5 * s, 2.4 * s);
+      ctx.fill();
+      ctx.fillStyle = "#121821";
+      ctx.beginPath();
+      ctx.roundRect(head.x - 9.4 * s, head.y - 13 * s, 18.8 * s, 17.5 * s, 8 * s);
+      ctx.fill();
+      ctx.fillStyle = "rgba(255,255,255,0.16)";
+      ctx.beginPath();
+      ctx.ellipse(head.x - 2.8 * s, head.y - 7.6 * s, 5 * s, 2.6 * s, -0.5, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.strokeStyle = "#f4fbff";
+      ctx.lineWidth = 2 * s;
+      ctx.lineCap = "round";
+      const ex = Math.sin(t * 0.7 + bot.seed) * 0.8 * s;
+      ctx.beginPath();
+      ctx.moveTo(head.x - 4.2 * s + ex, head.y - 2.6 * s);
+      ctx.lineTo(head.x - 1.4 * s + ex, head.y + 2.2 * s);
+      ctx.moveTo(head.x + 1.2 * s + ex, head.y - 2.6 * s);
+      ctx.lineTo(head.x + 4.0 * s + ex, head.y + 2.2 * s);
+      ctx.stroke();
+      ctx.fillStyle = shade(rgb, 1.2);
+      ctx.beginPath();
+      ctx.arc(head.x + 6.4 * s, head.y - 13.6 * s, 1.8 * s, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.strokeStyle = "#1a2230";
+      ctx.lineWidth = 1.2 * s;
+      ctx.beginPath();
+      ctx.moveTo(head.x + 3.8 * s, head.y - 11.2 * s);
+      ctx.lineTo(head.x + 6.1 * s, head.y - 13.1 * s);
+      ctx.stroke();
+      ctx.restore();
+      state.labels.push({ p: worldToScreen(bot.x, bot.y, z + 2.15 + bob), text: bot.short || bot.name, color: bot.color, active: state.selectedBot === bot.id });
+      state.hits.push({ type: "bot", id: bot.id, x: feet.x, y: feet.y - 16 * s, r: 22 * s });
+    }
+
+    function drawLabel(p, text, color, active) {
+      ctx.save();
+      ctx.font = `${active ? 600 : 500} ${11 * Math.max(0.85, Math.min(1.15, state.cam.z))}px ${getComputedStyle(document.body).fontFamily}`;
+      const w = ctx.measureText(text).width;
+      const pad = 8, h = 18;
+      const x = p.x - (w + pad * 2 + 10) / 2, y = p.y - h;
+      ctx.fillStyle = active ? "rgba(12,22,38,0.95)" : "rgba(8,14,26,0.82)";
+      ctx.strokeStyle = active ? color : "rgba(140,190,255,0.22)";
+      ctx.lineWidth = active ? 1.4 : 1;
+      ctx.beginPath();
+      ctx.roundRect(x, y, w + pad * 2 + 10, h, 9);
+      ctx.fill(); ctx.stroke();
+      ctx.fillStyle = color;
+      ctx.beginPath(); ctx.arc(x + 9, y + h / 2, 3, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = "#e8eef8";
+      ctx.textBaseline = "middle";
+      ctx.fillText(text, x + 16, y + h / 2 + 0.5);
+      ctx.restore();
+    }
+
+    function drawElevator(t) {
+      const ex = FW + 0.28, ey = FD / 2 - 1.15, ew = 1.85, ed = 2.3;
+      const z0 = 0.1, h = FLOORS.length * GAP + 0.8;
+      drawBox(ex, ey, z0, ew, ed, h, [90, 160, 210], 0.22);
+      const c = boxCorners(ex, ey, z0, ew, ed, h);
+      pathQuad(c.tn, c.te, c.ts, c.tw);
+      ctx.strokeStyle = "rgba(160,210,255,0.35)"; ctx.lineWidth = 1; ctx.stroke();
+      const targetLevel = state.selectedFloor ? floorById(state.selectedFloor).level : 4;
+      const carZ = floorZ(targetLevel) + 0.2;
+      if (state._carZ == null) state._carZ = carZ;
+      state._carZ += (carZ - state._carZ) * 0.04;
+      drawBox(ex + 0.12, ey + 0.12, state._carZ, ew - 0.24, ed - 0.24, 2.1, [120, 180, 220], 0.35);
+      const lamp = worldToScreen(ex + ew / 2, ey + ed / 2, state._carZ + 2.0);
+      const g = ctx.createRadialGradient(lamp.x, lamp.y, 0, lamp.x, lamp.y, 18 * state.cam.z);
+      g.addColorStop(0, "rgba(180,230,255,0.45)");
+      g.addColorStop(1, "rgba(180,230,255,0)");
+      ctx.fillStyle = g; ctx.beginPath(); ctx.arc(lamp.x, lamp.y, 18 * state.cam.z, 0, Math.PI * 2); ctx.fill();
+    }
+
+    function drawColumns() {
+      const h = FLOORS.length * GAP + 0.4;
+      const cols = [[0, 0], [FW - 0.28, 0], [0, FD - 0.28], [FW - 0.28, FD - 0.28]];
+      cols.forEach(p => drawBox(p[0], p[1], 0.1, 0.28, 0.28, h, [48, 62, 82], 0.9));
+    }
+
+    function drawRoof() {
+      const z = floorZ(FLOORS.length) + SLAB * 0.2;
+      drawSlab(-0.15, -0.15, z, FW + 0.3, FD + 0.3, 0.22, [90, 130, 180], 0.35, 0.9);
+      drawBox(FW / 2 - 1.2, FD / 2 - 0.9, z + 0.22, 2.4, 1.8, 0.7, [50, 70, 95], 0.85);
+    }
+
+    function drawScene() {
+      state.hits = [];
+      drawSky();
+      drawGround();
+      drawColumns();
+      const t = state.now / 1000;
+      state.labels = [];
+      for (const floor of FLOORS) {
+        const z = floorZ(floor.level);
+        const selected = state.selectedFloor === floor.id;
+        const glow = selected ? 1 : 0.35 + 0.12 * Math.sin(t * 1.4 + floor.level);
+        drawSlab(-0.08, -0.08, z, FW + 0.16, FD + 0.16, SLAB, floor.tint, glow, 0.9);
+        drawBackWalls(floor.level, floor.tint);
+        furnish(floor);
+        if (floor.id === "meet") GROUPS.forEach(g => drawMeetingTable(g, z + SLAB, t));
+        botsOn(floor.id).forEach(b => drawRobot(b, z + SLAB, t));
+        const cap = worldToScreen(-1.35, FD + 0.15, z + SLAB + 0.35);
+        const top = boxCorners(-0.08, -0.08, z, FW + 0.16, FD + 0.16, SLAB);
+        state.hits.push({ type: "floor", id: floor.id, quad: [top.tn, top.te, top.ts, top.tw], order: floor.level });
+        state.labels.push({ p: cap, text: `L${floor.level}  ${floor.name}`, color: floor.accent, active: selected, mini: true });
+      }
+      drawRoof();
+      drawElevator(t);
+      layoutLabels(state.labels);
+      for (const lb of state.labels) {
+        if (lb.mini) drawMiniFloorTag(lb.p, lb.text, lb.color, lb.active);
+        else drawLabel(lb.p, lb.text, lb.color, lb.active);
+      }
+      const vg = ctx.createRadialGradient(state.cssW / 2, state.cssH / 2, state.cssH * 0.2, state.cssW / 2, state.cssH / 2, state.cssH * 0.85);
+      vg.addColorStop(0, "rgba(0,0,0,0)");
+      vg.addColorStop(1, "rgba(0,0,0,0.28)");
+      ctx.fillStyle = vg; ctx.fillRect(0, 0, state.cssW, state.cssH);
+    }
+
+
+    function layoutLabels(items) {
+      const fontFam = getComputedStyle(document.body).fontFamily;
+      const minis = items.filter(i => i.mini);
+      const rest = items.filter(i => !i.mini);
+      rest.sort((a, b) => a.p.y - b.p.y || a.p.x - b.p.x);
+      const boxes = [];
+      for (const lb of rest) {
+        ctx.font = `${lb.active ? 600 : 500} ${11 * Math.max(0.85, Math.min(1.15, state.cam.z))}px ${fontFam}`;
+        const w = ctx.measureText(lb.text).width + 26;
+        const h = 20;
+        let x = lb.p.x - w / 2, y = lb.p.y - 18;
+        for (let k = 0; k < 24; k++) {
+          let hit = false;
+          for (const b of boxes) {
+            if (x < b.x + b.w + 4 && x + w + 4 > b.x && y < b.y + b.h + 3 && y + h + 3 > b.y) { hit = true; break; }
+          }
+          if (!hit) break;
+          y += 11;
+        }
+        boxes.push({ x, y, w, h });
+        lb.p = { x: x + w / 2, y: y + 18 };
+      }
+      // keep mini tags on the left; if they collide with each other, they shouldn't (different floors)
+    }
+    function drawMiniFloorTag(p, text, color, active) {
+      ctx.save();
+      ctx.font = `600 10px ${getComputedStyle(document.body).fontFamily}`;
+      const w = ctx.measureText(text).width;
+      ctx.fillStyle = active ? "rgba(10,20,36,0.92)" : "rgba(8,14,24,0.55)";
+      ctx.strokeStyle = active ? color : "rgba(140,190,255,0.18)";
+      ctx.lineWidth = 1;
+      ctx.beginPath(); ctx.roundRect(p.x, p.y - 12, w + 12, 16, 7); ctx.fill(); ctx.stroke();
+      ctx.fillStyle = active ? color : "rgba(200,214,230,0.8)";
+      ctx.textBaseline = "middle";
+      ctx.fillText(text, p.x + 6, p.y - 3);
+      ctx.restore();
+    }
+
+    function esc(s) {
+      return String(s).replace(/[&<>"']/g, c => ({ "&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;" }[c]));
+    }
+
+    function renderUI() {
+      if (!state.uiDirty) return;
+      state.uiDirty = false;
+      const floorList = document.getElementById("floor-list");
+      floorList.innerHTML = FLOORS.slice().reverse().map(f => {
+        const nBots = botsOn(f.id).length;
+        const nGrp = f.id === "meet" ? GROUPS.length : 0;
+        const sub = nGrp ? `${nGrp} 間會議室` : `${nBots} 位 bot`;
+        const active = state.selectedFloor === f.id ? " active" : "";
+        return `<button type="button" class="floor-btn${active}" data-floor="${f.id}">
+          <i class="floor-dot" style="background:${f.accent};color:${f.accent}"></i>
+          <div><div class="name">${esc(f.name)}</div><div class="sub">${esc(sub)}</div></div>
+          <div class="lvl">L${f.level}</div>
+        </button>`;
+      }).join("");
+
+      document.getElementById("wait-list").innerHTML = WAITING.map(w => {
+        const active = state.selectedWait === w.id ? " active" : "";
+        return `<button type="button" class="wait-card${active}" data-wait="${w.id}">
+          <div class="tag">等待 leo</div>
+          <div class="title">${esc(w.title)}</div>
+          <div class="detail">${esc(w.detail)}</div>
+          <div class="owner">負責：${esc(w.owners)}</div>
+        </button>`;
+      }).join("");
+
+      const detail = document.getElementById("detail");
+      const bot = state.selectedBot && botById(state.selectedBot);
+      const group = state.selectedGroup && GROUPS.find(g => g.id === state.selectedGroup);
+      const floor = state.selectedFloor && floorById(state.selectedFloor);
+      if (bot) {
+        const fl = floorById(bot.floor);
+        const st = bot.status === "waiting"
+          ? `<span class="status-pill waiting"><i></i>等待 leo 處理</span>`
+          : `<span class="status-pill unknown"><i></i>狀態未知</span>`;
+        const usage = bot.usage != null ? `${bot.usage}%（占本週全部 Grok Bot 用量）` : `<span class="unknown">未知</span>（含於「其他」或未單列）`;
+        let routines = `<span class="unknown">未知</span>`;
+        if (bot.routines) {
+          routines = `<ul style="margin:4px 0 0 16px;padding:0">` + bot.routines.map(r => {
+            const extra = r.share != null ? `（占全部用量 ${r.share}%）` : (r.note ? `（${esc(r.note)}）` : "");
+            return `<li>${esc(r.name)}${extra}</li>`;
+          }).join("") + `</ul>`;
+          if (bot.id === "finance") routines += `<div class="unknown" style="margin-top:4px">其餘分項：未知</div>`;
+        }
+        detail.innerHTML = `<div class="card">
+          <div class="kicker">${esc(fl.name)} · L${fl.level}</div>
+          <h3>${esc(bot.name)}</h3>
+          <div style="margin-top:8px">${st}</div>
+          <dl class="kv">
+            <dt>本週用量</dt><dd>${usage}</dd>
+            <dt>花費 / token</dt><dd class="unknown">未知</dd>
+            <dt>例行工作</dt><dd>${routines}</dd>
+          </dl>
+          <div class="chips">
+            <button type="button" class="chip" data-floor="${bot.floor}">看整層</button>
+          </div>
+        </div>`;
+      } else if (group) {
+        detail.innerHTML = `<div class="card">
+          <div class="kicker">會議室 · L1</div>
+          <h3>${esc(group.name)}</h3>
+          <p style="font-size:12px;color:var(--muted);margin-top:8px;line-height:1.55">此為群組聊天室，以會議桌表示，不是 bot。</p>
+          <dl class="kv">
+            <dt>狀態</dt><dd class="unknown">未知</dd>
+            <dt>本週用量</dt><dd class="unknown">未知</dd>
+          </dl>
+        </div>`;
+      } else if (floor) {
+        const names = floor.id === "meet"
+          ? GROUPS.map(g => g.name).join("、")
+          : botsOn(floor.id).map(b => b.name).join("、");
+        detail.innerHTML = `<div class="card">
+          <div class="kicker">L${floor.level}</div>
+          <h3>${esc(floor.name)}</h3>
+          <p style="font-size:12px;color:var(--muted);margin-top:8px;line-height:1.55">${esc(floor.hint)}</p>
+          <dl class="kv">
+            <dt>${floor.id === "meet" ? "會議室" : "成員"}</dt><dd>${esc(names)}</dd>
+            <dt>本層花費</dt><dd class="unknown">未知</dd>
+          </dl>
+        </div>`;
+      } else {
+        detail.innerHTML = `<div class="card">
+          <div class="kicker">整棟概況</div>
+          <h3>GrokBot 辦公室</h3>
+          <p style="font-size:12px;color:var(--muted);margin-top:8px;line-height:1.55">6 層依職責分組（非正式組織圖）。點樓層或 bot 查看詳情。</p>
+          <dl class="kv">
+            <dt>Bot</dt><dd>14 位</dd>
+            <dt>會議室</dt><dd>3 間（群組）</dd>
+            <dt>等候事項</dt><dd>3 件，待 leo 處理</dd>
+          </dl>
+        </div>`;
+      }
+
+      const finance = botById("finance");
+      const usageRows = USAGE.map(u => {
+        const active = (bot && bot.id === u.id) || (u.id === "finance" && bot && bot.id === "finance");
+        const bar = `<div class="bar-row"${u.id !== "other" ? ` data-usage="${u.id}"` : ""}>
+          <div class="lab"><span>${esc(u.name)}</span><span>${u.share}%</span></div>
+          <div class="track"><i style="width:${u.share}%;background:${u.color}"></i></div>
+        </div>`;
+        if (u.id === "finance") {
+          const sub = finance.routines.map(r => `<div class="bar-row">
+            <div class="lab"><span>${esc(r.name)}</span><span>${r.share}%</span></div>
+            <div class="track"><i style="width:${r.share}%;background:rgba(245,185,66,0.45)"></i></div>
+          </div>`).join("") + `<div class="bar-row"><div class="lab"><span>其餘分項</span><span class="unknown">未知</span></div></div>`;
+          return bar + `<div class="subbars">${sub}</div>`;
+        }
+        if (u.id === "other") {
+          return bar + `<div class="unknown" style="font-size:11px;margin:-4px 0 8px">其餘 bot 的分項占比未知</div>`;
+        }
+        return bar;
+      }).join("");
+      document.getElementById("usage-card").innerHTML = `
+        <div class="kicker">${USAGE_RANGE}　占全部 Grok Bot 用量</div>
+        ${usageRows}
+        <div class="spend">
+          <div><label>今日花費</label><b>未知</b></div>
+          <div><label>TOKENS</label><b>未知</b></div>
+          <div><label>消耗速率</label><b>未知</b></div>
+        </div>`;
+
+      document.getElementById("legend").innerHTML = `
+        <strong>資料來源與時間</strong><br>
+        截至 ${AS_OF}（台北時間）。用量為 ${USAGE_RANGE} 的占比，不是金額或 token。<br>
+        <strong>真實資料：</strong>14 位 bot 與 3 個群組名稱；本週用量占比（財務專家 53%、Premarket Desk 19%、New Bot 10%、美國自由行 8%、LIFE 4%、其他 6%）；財務專家已列的三項例行工作占比；Code 的兩項例行工作；3 件等待 leo 處理的事項；Code 的狀態為「等待 leo」。
+        <br><strong>未知（不編造）：</strong>所有金額、token、消耗速率；其餘 bot 的用量分項與例行工作；除 Code 以外所有 bot／群組的即時狀態；今日完成數、即時活動。
+        <br>樓層為依職責整理，非正式組織圖。畫面中的閒置動態與電梯移動僅供觀看，不代表正在執行任務。
+        <div class="rings">
+          <span><i style="color:var(--green)"></i>工作中（目前無）</span>
+          <span><i style="color:var(--amber)"></i>等待 leo（Code）</span>
+          <span><i style="color:var(--red)"></i>卡住（目前無）</span>
+          <span><i style="color:var(--grey)"></i>狀態未知</span>
+        </div>`;
+    }
+
+    function selectFloor(id, cam) {
+      state.selectedFloor = id;
+      state.selectedBot = null;
+      state.selectedGroup = null;
+      state.selectedWait = null;
+      state.uiDirty = true;
+      if (cam !== false) focusFloor(id, true);
+    }
+    function selectBot(id) {
+      const b = botById(id);
+      if (!b) return;
+      state.selectedBot = id;
+      state.selectedFloor = b.floor;
+      state.selectedGroup = null;
+      state.selectedWait = null;
+      state.uiDirty = true;
+      focusFloor(b.floor, true);
+    }
+    function selectGroup(id) {
+      state.selectedGroup = id;
+      state.selectedFloor = "meet";
+      state.selectedBot = null;
+      state.selectedWait = null;
+      state.uiDirty = true;
+      focusFloor("meet", true);
+    }
+    function selectWait(id) {
+      const w = WAITING.find(x => x.id === id);
+      if (!w) return;
+      state.selectedWait = id;
+      state.uiDirty = true;
+      selectBot(w.focus);
+      state.selectedWait = id;
+    }
+
+    document.getElementById("floor-list").addEventListener("click", e => {
+      const btn = e.target.closest("[data-floor]");
+      if (btn) selectFloor(btn.getAttribute("data-floor"));
+    });
+    document.getElementById("wait-list").addEventListener("click", e => {
+      const btn = e.target.closest("[data-wait]");
+      if (btn) selectWait(btn.getAttribute("data-wait"));
+    });
+    document.getElementById("detail").addEventListener("click", e => {
+      const btn = e.target.closest("[data-floor]");
+      if (btn) selectFloor(btn.getAttribute("data-floor"));
+    });
+    document.getElementById("usage-card").addEventListener("click", e => {
+      const row = e.target.closest("[data-usage]");
+      if (row) selectBot(row.getAttribute("data-usage"));
+    });
+    document.querySelectorAll("[data-sheet]").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const id = btn.getAttribute("data-sheet");
+        document.getElementById("panel-left").classList.toggle("open", id === "left");
+        document.getElementById("panel-right").classList.toggle("open", id === "right");
+      });
+    });
+    document.querySelectorAll("[data-close]").forEach(btn => {
+      btn.addEventListener("click", () => {
+        document.getElementById("panel-" + btn.getAttribute("data-close")).classList.remove("open");
+      });
+    });
+
+    function hitTest(x, y) {
+      const p = { x, y };
+      for (let i = state.hits.length - 1; i >= 0; i--) {
+        const h = state.hits[i];
+        if (h.r && Math.hypot(x - h.x, y - h.y) <= h.r) return h;
+      }
+      const floors = state.hits.filter(h => h.type === "floor").sort((a, b) => b.order - a.order);
+      for (const h of floors) {
+        if (pointInQuad(p, h.quad[0], h.quad[1], h.quad[2], h.quad[3])) return h;
+      }
+      return null;
+    }
+
+    canvas.addEventListener("pointerdown", e => {
+      canvas.setPointerCapture(e.pointerId);
+      state.dragging = true; state.moved = false;
+      state.lastX = e.clientX; state.lastY = e.clientY;
+      canvas.classList.add("dragging");
+    });
+    canvas.addEventListener("pointermove", e => {
+      if (!state.dragging) return;
+      const dx = e.clientX - state.lastX, dy = e.clientY - state.lastY;
+      if (Math.abs(dx) + Math.abs(dy) > 3) state.moved = true;
+      state.lastX = e.clientX; state.lastY = e.clientY;
+      state.cam.x += dx / state.cam.z;
+      state.cam.y += dy / state.cam.z;
+      state.target.x = state.cam.x;
+      state.target.y = state.cam.y;
+    });
+    function endDrag(e) {
+      if (!state.dragging) return;
+      state.dragging = false;
+      canvas.classList.remove("dragging");
+      if (!state.moved) {
+        const r = canvas.getBoundingClientRect();
+        const h = hitTest(e.clientX - r.left, e.clientY - r.top);
+        if (h && h.type === "bot") selectBot(h.id);
+        else if (h && h.type === "group") selectGroup(h.id);
+        else if (h && h.type === "floor") selectFloor(h.id);
+        else { state.selectedBot = state.selectedGroup = state.selectedFloor = state.selectedWait = null; state.uiDirty = true; }
+      }
+    }
+    canvas.addEventListener("pointerup", endDrag);
+    canvas.addEventListener("pointercancel", endDrag);
+    canvas.addEventListener("dblclick", () => { fitCamera(true); state.selectedBot = state.selectedGroup = state.selectedFloor = state.selectedWait = null; state.uiDirty = true; });
+    canvas.addEventListener("wheel", e => {
+      e.preventDefault();
+      const factor = Math.exp(-e.deltaY * 0.0012);
+      const next = Math.max(0.5, Math.min(2.1, state.cam.z * factor));
+      state.cam.z = next; state.target.z = next;
+    }, { passive: false });
+    window.addEventListener("keydown", e => {
+      if (e.target && /input|textarea/i.test(e.target.tagName)) return;
+      if (e.key >= "1" && e.key <= "6") {
+        const f = FLOORS.find(x => x.level === Number(e.key));
+        if (f) selectFloor(f.id);
+      } else if (e.key === "0" || e.key === "Escape") {
+        fitCamera(true);
+        state.selectedBot = state.selectedGroup = state.selectedFloor = state.selectedWait = null;
+        state.uiDirty = true;
+      }
+    });
+
+    function tickClock() {
+      const fmt = new Intl.DateTimeFormat("zh-TW", { timeZone: "Asia/Taipei", hour: "2-digit", minute: "2-digit", second: "2-digit", hour12: false });
+      const d = new Intl.DateTimeFormat("zh-TW", { timeZone: "Asia/Taipei", year: "numeric", month: "2-digit", day: "2-digit" });
+      const now = new Date();
+      document.getElementById("live-clock").textContent = `${d.format(now)} ${fmt.format(now)}`;
+    }
+    tickClock();
+    setInterval(tickClock, 1000);
+
+    let last = performance.now();
+    function frame(now) {
+      state.now = now;
+      const dt = Math.min(0.05, (now - last) / 1000);
+      last = now;
+      const c = state.cam, t = state.target;
+      c.x += (t.x - c.x) * Math.min(1, dt * 6);
+      c.y += (t.y - c.y) * Math.min(1, dt * 6);
+      c.z += (t.z - c.z) * Math.min(1, dt * 6);
+      drawScene();
+      renderUI();
+      requestAnimationFrame(frame);
+    }
+
+    window.addEventListener("resize", resize);
+    resize();
+    state.uiDirty = true;
+    renderUI();
+    requestAnimationFrame(frame);
+  })();
+  </script>
+</body>
+</html>
